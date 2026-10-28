@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>한 문장 소설 · 나만의 책 만들기</title>
+<meta name="description" content="아무렇게나 적은 한 줄을 소설책과 시집으로 엮어 드려요. 표지부터 판권면까지, 나만의 책 한 권.">
+<meta property="og:title" content="한 문장 소설 · 나만의 책 만들기">
+<meta property="og:description" content="아무렇게나 적은 한 줄이 표지가 있는 한 권의 책이 됩니다.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&family=Song+Myung&display=swap">
+<style>
+:root {
+  --bg: #eceef3;
+  --glow: rgba(255, 206, 158, 0.55);
+  --fg: #24222c;
+  --muted: #6c6877;
+  --line: #d0d2da;
+  --surface: #fbfaf7;
+  --accent: #573c60;
+  --accent-fg: #ffffff;
+  --rule: #e6aaa4;
+  --paper: #fbf8f1;
+  --ink: #26221d;
+  --ink-soft: #7a7064;
+  --gold: #dcbc70;
+  --obi: #f1ece0;
+  --f-display: "Nanum Myeongjo", "Gowun Batang", serif;
+  --f-title: "Song Myung", "Nanum Myeongjo", serif;
+  --f-body: "Gowun Batang", "Nanum Myeongjo", serif;
+  --f-ui: "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121319; --glow: rgba(255, 180, 110, 0.12); --fg: #ece9f1; --muted: #9d99a9; --line: #2d2f39;
+    --surface: #1b1c23; --accent: #cfb3d6; --accent-fg: #1b1520; --rule: rgba(230, 140, 132, 0.32);
+    --paper: #ece6d8; --ink: #24201b; --ink-soft: #6f665a; --obi: #e3dccb;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--fg); }
+body {
+  font-family: var(--f-ui); line-height: 1.6;
+  background-image: radial-gradient(ellipse 70% 460px at 50% -60px, var(--glow), transparent 75%);
+  background-repeat: no-repeat;
+  padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.wrap {
+  max-width: 1000px; margin: 0 auto;
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
+}
+
+/* hero */
+.hero { padding-block: 72px 40px; text-align: center; display: grid; gap: 16px; justify-items: center; }
+.eyebrow { font-size: 13px; letter-spacing: 0.32em; color: var(--muted); }
+h1 { font-family: var(--f-display); font-weight: 800; margin: 0; font-size: clamp(40px, 8vw, 68px); line-height: 1.12; letter-spacing: -0.02em; }
+.lead { margin: 0; max-width: 30em; font-family: var(--f-body); font-size: 18px; line-height: 1.8; color: var(--muted); text-wrap: balance; }
+.cta {
+  display: inline-block; margin-top: 10px; text-decoration: none;
+  font-family: var(--f-display); font-weight: 800; font-size: 19px; letter-spacing: 0.06em;
+  padding: 17px 46px; border-radius: 999px; background: var(--accent); color: var(--accent-fg);
+  box-shadow: 0 12px 24px -12px color-mix(in srgb, var(--accent) 80%, transparent);
+  transition: transform 160ms;
+}
+.cta:hover { transform: translateY(-2px); }
+.small { font-size: 13px; color: var(--muted); margin: 0; }
+
+/* before -> after */
+.demo { display: grid; grid-template-columns: minmax(0, 0.9fr) auto minmax(0, 1.3fr); align-items: center; gap: 28px; padding-block: 40px 30px; }
+@media (max-width: 760px) { .demo { grid-template-columns: minmax(0, 1fr); justify-items: center; } .arrow { transform: rotate(90deg); } }
+.memo {
+  background: var(--surface); border-radius: 4px; position: relative; max-width: 340px; width: 100%;
+  box-shadow: 0 1px 0 var(--line), 0 20px 40px -26px rgba(30, 25, 45, 0.5);
+  padding: 16px 20px 22px 56px; transform: rotate(-2deg);
+}
+.memo::before { content: ""; position: absolute; inset: 0 auto 0 40px; width: 1px; background: var(--rule); }
+.memo .t { font-family: var(--f-display); font-weight: 700; font-size: 13px; letter-spacing: 0.6em; color: var(--muted); border-bottom: 1px solid var(--rule); padding-bottom: 8px; margin-bottom: 6px; }
+.memo p { margin: 0; font-family: var(--f-body); font-size: 17px; line-height: 34px;
+  background: repeating-linear-gradient(to bottom, transparent 0 33px, color-mix(in srgb, var(--rule) 60%, transparent) 33px 34px); }
+.arrow { font-family: var(--f-display); font-size: 30px; color: var(--muted); }
+.spread { display: flex; justify-content: center; filter: drop-shadow(0 22px 30px rgba(20, 15, 30, 0.3)); max-width: 100%; }
+.cover, .page { width: min(250px, 42vw); aspect-ratio: 1 / 1.46; flex: none; }
+@media (max-width: 760px) { .cover, .page { width: min(200px, 44vw); } }
+.cover {
+  position: relative; overflow: hidden; color: var(--gold); border-radius: 3px 0 0 3px;
+  background:
+    linear-gradient(to right, rgba(0, 0, 0, 0.35), rgba(255, 255, 255, 0.06) 3%, transparent 6%),
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.025) 0 2px, transparent 2px 4px),
+    #3a3530;
+  display: grid; grid-template-rows: auto 1fr auto auto; padding: 10% 10% 0; container-type: inline-size;
+}
+.cover::before { content: ""; position: absolute; inset: 4.5%; border: 1px solid color-mix(in srgb, var(--gold) 55%, transparent); }
+.cover .g { text-align: center; font-size: 3cqw; letter-spacing: 0.4em; }
+.cover .tt { align-self: center; text-align: center; font-family: var(--f-title); font-size: 11.5cqw; line-height: 1.25; }
+.cover .au { text-align: center; font-family: var(--f-body); font-size: 4.4cqw; letter-spacing: 0.25em; padding-bottom: 7%; }
+.cover .obi { margin: 0 -11%; background: var(--obi); color: var(--ink); padding: 5.5% 11% 5%; font-family: var(--f-body); font-weight: 700; font-size: 4.6cqw; line-height: 1.45; position: relative; }
+.page {
+  background: var(--paper); color: var(--ink); border-radius: 0 4px 4px 0; container-type: inline-size;
+  background-image: linear-gradient(to right, rgba(60, 45, 25, 0.18), transparent 9%);
+  padding: 10% 9.5% 7.5%; font-family: var(--f-body); font-size: 5.4cqw; line-height: 1.85; overflow: hidden;
+  display: grid; grid-template-rows: auto 1fr auto; gap: 4%;
+}
+.page .chap { text-align: center; }
+.page .chap small { display: block; font-size: 0.72em; letter-spacing: 0.3em; color: var(--ink-soft); }
+.page .chap b { font-family: var(--f-title); font-weight: 400; font-size: 1.4em; }
+.page p { margin: 0; text-align: justify; word-break: keep-all; overflow: hidden; }
+.page .fo { text-align: center; font-size: 0.72em; color: var(--ink-soft); }
+
+/* steps */
+.steps { padding-block: 50px 20px; }
+.steps h2, .faq h2 { font-family: var(--f-display); font-weight: 800; font-size: clamp(24px, 4vw, 32px); margin: 0 0 26px; text-align: center; }
+.steps ol { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; counter-reset: s; }
+@media (max-width: 760px) { .steps ol { grid-template-columns: minmax(0, 1fr); } }
+.steps li { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 22px; counter-increment: s; display: grid; gap: 8px; align-content: start; }
+.steps li::before { content: counter(s); font-family: var(--f-display); font-weight: 800; font-size: 28px; color: var(--accent); line-height: 1; }
+.steps h3 { margin: 0; font-family: var(--f-body); font-size: 18px; }
+.steps p { margin: 0; font-size: 15px; color: var(--muted); }
+
+/* kinds */
+.kinds { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; padding-block: 20px 30px; }
+@media (max-width: 640px) { .kinds { grid-template-columns: minmax(0, 1fr); } }
+.kind { border-radius: 14px; padding: 24px; background: var(--surface); border: 1px solid var(--line); display: grid; gap: 10px; }
+.kind h3 { margin: 0; font-family: var(--f-display); font-weight: 800; font-size: 22px; }
+.kind p { margin: 0; color: var(--muted); font-size: 15px; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tags span { font-size: 13px; padding: 5px 11px; border-radius: 999px; border: 1px solid var(--line); display: inline-flex; align-items: center; gap: 6px; }
+.tags i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
+
+/* faq */
+.faq { padding-block: 40px 10px; max-width: 680px; margin: 0 auto; }
+.faq details { border-bottom: 1px solid var(--line); padding: 16px 4px; }
+.faq summary { cursor: pointer; font-family: var(--f-body); font-weight: 700; font-size: 17px; }
+.faq details p { margin: 10px 0 0; color: var(--muted); font-size: 15px; }
+
+.end { text-align: center; padding-block: 60px 70px; display: grid; gap: 14px; justify-items: center; }
+.end h2 { font-family: var(--f-display); font-weight: 800; font-size: clamp(26px, 5vw, 38px); margin: 0; text-wrap: balance; }
+footer { text-align: center; font-size: 13px; color: var(--muted); padding-block: 0 40px; }
+
+@media (prefers-reduced-motion: reduce) { .cta { transition: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div class="eyebrow">한문장 출판 · 1인 제본소</div>
+    <h1>나만의 책 만들기</h1>
+    <p class="lead">오타가 나도, 'ㅋㅋ'와 'ㅠㅠ'뿐이어도 괜찮아요. 오늘 아무렇게나 적은 한 줄이 표지가 있는 소설책과 시집이 됩니다.</p>
+    <a class="cta" href="https://claude.ai/artifact/2Xzc87JcnkyHDbBzYSam4X" target="_blank" rel="noopener">책 만들러 가기</a>
+    <p class="small">claude.ai 무료 계정으로 로그인하면 바로 쓸 수 있어요</p>
+  </header>
+
+  <section class="demo" aria-label="메모가 책이 되는 예시">
+    <div class="memo">
+      <div class="t">원고</div>
+      <p>아 오늘 비오는데 우산 잃어버림 ㅡㅡ 개짜증,, 근데 모르는 사람이 우산 씌워줌ㅠㅠ 감동</p>
+    </div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="spread">
+      <div class="cover">
+        <div class="g">순문학</div>
+        <div class="tt">빗소리의<br>반경</div>
+        <div class="au">한서윤</div>
+        <div class="obi">잃어버린 우산 대신, 나는 낯선 반경 하나를 얻었다</div>
+      </div>
+      <div class="page">
+        <div class="chap"><small>제1장</small><b>남색 우산</b></div>
+        <p>우산이 사라졌다는 사실을 깨달은 것은 지하철역 계단을 다 올라온 뒤였다. 손잡이를 쥐고 있던 감각은 아직 손바닥에 남아 있는데, 정작 손은 비어 있었다.</p>
+        <div class="fo">1</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="steps">
+    <h2>세 걸음이면 한 권</h2>
+    <ol>
+      <li><h3>원고지에 한 줄</h3><p>맞춤법, 띄어쓰기, 말투 신경 쓰지 말고 있었던 일을 그대로 적어요. 지은이 이름도 넣을 수 있어요.</p></li>
+      <li><h3>제본을 기다려요</h3><p>쓴 내용을 그대로 살려 소설 문장이나 시로 다듬고, 표지와 띠지까지 골라 한 권으로 엮어요.</p></li>
+      <li><h3>펼치고 나눠요</h3><p>표지부터 판권면까지 넘겨 보고, 만든 책은 책장에 꽂아 두거나 링크로 나눌 수 있어요.</p></li>
+    </ol>
+  </section>
+
+  <section class="kinds">
+    <div class="kind">
+      <h3>소설책</h3>
+      <p>장 제목, 첫 글자, 머리글과 쪽 번호까지 갖춘 소설 한 장.</p>
+      <div class="tags">
+        <span><i style="--c:#3a3530"></i>순문학</span><span><i style="--c:#6b1e2e"></i>로맨스</span><span><i style="--c:#1b2943"></i>미스터리</span><span><i style="--c:#1d4636"></i>판타지</span><span><i style="--c:#5a4a2a"></i>에세이</span>
+      </div>
+    </div>
+    <div class="kind">
+      <h3>시집</h3>
+      <p>차례가 있는 작은 시집. 같은 하루를 3편, 5편, 7편의 시로.</p>
+      <div class="tags">
+        <span><i style="--c:#2f3d52"></i>서정</span><span><i style="--c:#7a3a46"></i>사랑</span><span><i style="--c:#3f5a3a"></i>계절</span><span><i style="--c:#1c1f2e"></i>밤</span><span><i style="--c:#7a5a1e"></i>위트</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="faq">
+    <h2>궁금한 점</h2>
+    <details><summary>정말 아무렇게나 써도 되나요?</summary><p>네. 오타, 반말, 줄임말, 초성, 이모티콘이 섞여 있어도 괜찮아요. 쓴 사건과 감정은 그대로 살리고, 문장만 책의 말투로 바꿔요.</p></details>
+    <details><summary>돈이 드나요?</summary><p>따로 결제할 필요는 없어요. claude.ai 무료 계정으로 로그인해서, 계정의 사용량 한도 안에서 쓰면 돼요. 책을 만들 때 처음 한 번 사용 허락을 묻는 창이 떠요.</p></details>
+    <details><summary>왜 로그인이 필요한가요?</summary><p>책을 쓰는 일은 Claude가 해요. 각자 자기 계정으로 책을 만들기 때문에 따로 요금이 들지 않아요.</p></details>
+  </section>
+
+  <section class="end">
+    <h2>오늘의 한 줄, 책으로 엮어 볼까요?</h2>
+    <a class="cta" href="https://claude.ai/artifact/2Xzc87JcnkyHDbBzYSam4X" target="_blank" rel="noopener">책 만들러 가기</a>
+  </section>
+</div>
+<footer>한문장 출판 · 나만의 책 만들기</footer>
+</body>
+</html>
