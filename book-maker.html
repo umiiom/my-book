@@ -179,7 +179,8 @@ textarea:focus-visible { outline: none; }
 .step { font-family: var(--f-body); font-size: 17px; color: var(--muted); margin: 0; min-height: 1.6em; }
 .bar-r { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 #shareWrap { position: fixed; left: -10000px; top: 0; }
-#shareCard { padding: 36px 36px 22px; background: var(--bg); display: grid; justify-items: center; gap: 16px; }
+#shareCard { padding: 36px 36px 22px; background: var(--bg); display: grid; justify-items: start; gap: 28px; }
+#shareCard .sc-foot { justify-self: center; }
 #shareCard .sc-book { display: flex; filter: drop-shadow(0 18px 24px rgba(20, 15, 30, 0.28)); }
 #shareCard .sc-foot { font-size: 13px; color: var(--muted); letter-spacing: 0.1em; }
 .share:disabled, .ghost:disabled { opacity: 0.6; cursor: default; }
@@ -658,15 +659,21 @@ function openBook(b) {
 }
 $("back").onclick = () => show("write");
 
-/* ---------- 이미지로 공유: 표지 + 첫 페이지를 한 장의 이미지로 ---------- */
+/* ---------- 이미지로 공유: 표지부터 판권면까지 모든 페이지를 한 장의 이미지로 ---------- */
 function buildCard() {
   const old = document.getElementById("shareWrap"); if (old) old.remove();
   const wasView = view;
-  const firstIdx = Math.max(0, leaves.findIndex((l) => /class="(chap|poemhead)"/.test(l.html)));
   view = 0;
+  const sheets = [coverHTML(), ...leaves.map((l) => l.html).filter((h) => !h.includes('<div class="body"></div>'))];
+  let rows = "";
+  for (let i = 0; i < sheets.length; i += 2) {
+    const left = i === 0 ? sheets[0] : `<div class="page left">${sheets[i]}</div>`;
+    const right = sheets[i + 1] != null ? `<div class="page right">${sheets[i + 1]}</div>` : "";
+    rows += `<div class="sc-book">${left}${right}</div>`;
+  }
   const card = document.createElement("div");
   card.id = "shareCard";
-  card.innerHTML = `<div class="sc-book">${coverHTML()}<div class="page right">${leaves[firstIdx].html}</div></div><div class="sc-foot">한문장 출판 · 나만의 책 만들기</div>`;
+  card.innerHTML = `${rows}<div class="sc-foot">한문장 출판 · 나만의 책 만들기</div>`;
   card.style.setProperty("--pw", stage.style.getPropertyValue("--pw"));
   card.style.setProperty("--ph", stage.style.getPropertyValue("--ph"));
   card.style.setProperty("--fs", stage.style.getPropertyValue("--fs"));
@@ -681,7 +688,7 @@ async function cardBlob() {
   try {
     await (document.fonts ? document.fonts.ready : Promise.resolve());
     const bg = getComputedStyle(document.body).backgroundColor;
-    return await htmlToImage.toBlob(card, { pixelRatio: 2, backgroundColor: bg, cacheBust: true });
+    return await htmlToImage.toBlob(card, { pixelRatio: leaves.length > 8 ? 1.5 : 2, backgroundColor: bg, cacheBust: true });
   } finally { card.parentNode.remove(); }
 }
 const fileName = () => `${(book.title || "나의 책").replace(/[\\/:*?"<>|]/g, "")}.png`;
