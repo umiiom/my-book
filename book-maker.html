@@ -1,0 +1,781 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>한 문장 소설 · 북메이커</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&family=Song+Myung&display=swap">
+<style>
+:root {
+  --bg: #eceef3;
+  --glow: rgba(255, 206, 158, 0.55);
+  --fg: #24222c;
+  --muted: #6c6877;
+  --line: #d0d2da;
+  --surface: #fbfaf7;
+  --accent: #573c60;
+  --accent-fg: #ffffff;
+  --rule: #e6aaa4;
+  --shelf: #a98d74;
+  --shelf-edge: #8a6f58;
+  --paper: #fbf8f1;
+  --ink: #26221d;
+  --ink-soft: #7a7064;
+  --gold: #dcbc70;
+  --obi: #f1ece0;
+  --f-display: "Nanum Myeongjo", "Gowun Batang", serif;
+  --f-title: "Song Myung", "Nanum Myeongjo", serif;
+  --f-body: "Gowun Batang", "Nanum Myeongjo", serif;
+  --f-ui: "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121319; --glow: rgba(255, 180, 110, 0.12); --fg: #ece9f1; --muted: #9d99a9; --line: #2d2f39;
+    --surface: #1b1c23; --accent: #cfb3d6; --accent-fg: #1b1520; --rule: rgba(230, 140, 132, 0.32);
+    --shelf: #4c3b2e; --shelf-edge: #3a2c21; --paper: #ece6d8; --ink: #24201b; --ink-soft: #6f665a; --obi: #e3dccb;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--fg); }
+body {
+  font-family: var(--f-ui); min-height: 100%;
+  background-image: radial-gradient(ellipse 70% 420px at 50% -60px, var(--glow), transparent 75%);
+  background-repeat: no-repeat;
+}
+button { font-family: var(--f-ui); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.app {
+  max-width: 980px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 44px 64px;
+}
+.view { animation: rise 520ms ease both; }
+@keyframes rise { from { opacity: 0.2; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+.top-nav { display: flex; justify-content: flex-start; align-items: center; margin-bottom: 24px; }
+.nav-link { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 700; }
+.nav-link:hover { color: var(--accent); }
+
+/* scene 1: write */
+.hero { text-align: center; display: grid; gap: 14px; margin-bottom: 34px; }
+.eyebrow { font-size: 13px; letter-spacing: 0.32em; color: var(--muted); }
+.hero h1 { font-family: var(--f-display); font-weight: 800; margin: 0; font-size: clamp(36px, 7vw, 60px); line-height: 1.15; letter-spacing: -0.02em; }
+.hero p { margin: 0 auto; max-width: 30em; font-family: var(--f-body); font-size: 17px; line-height: 1.75; color: var(--muted); }
+
+.sheet {
+  max-width: 680px; margin: 0 auto; background: var(--surface); border-radius: 4px;
+  box-shadow: 0 1px 0 var(--line), 0 24px 50px -28px rgba(30, 25, 45, 0.45);
+  display: grid; position: relative;
+}
+.sheet::after { content: ""; position: absolute; inset: 0 auto 0 52px; width: 1px; background: var(--rule); pointer-events: none; }
+.sheet-head {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+  padding: 18px 22px 10px 70px; border-bottom: 1px solid var(--rule);
+  font-size: 13px; color: var(--muted);
+}
+.sheet-head .t { font-family: var(--f-display); font-weight: 700; letter-spacing: 0.6em; color: var(--fg); font-size: 14px; }
+.sheet-head .n { font-variant-numeric: tabular-nums; }
+textarea {
+  display: block; width: 100%; box-sizing: border-box; min-height: 216px; resize: vertical; border: 0; margin: 0;
+  font-family: var(--f-body); font-size: 18px; line-height: 36px; color: var(--fg);
+  padding: 6px 24px 18px 70px;
+  background: repeating-linear-gradient(to bottom, transparent 0 41px, color-mix(in srgb, var(--rule) 60%, transparent) 41px 42px);
+  background-position: 0 0; background-attachment: local;
+}
+textarea::placeholder { color: color-mix(in srgb, var(--muted) 70%, transparent); }
+textarea:focus-visible { outline: none; }
+.sheet:focus-within { box-shadow: 0 0 0 2px var(--accent), 0 24px 50px -28px rgba(30, 25, 45, 0.45); }
+
+.opts { max-width: 680px; margin: 26px auto 0; display: grid; gap: 18px; }
+.opt { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 12px; align-items: center; }
+@media (max-width: 520px) { .opt { grid-template-columns: minmax(0, 1fr); gap: 8px; } }
+.opt .label { font-size: 13px; color: var(--muted); letter-spacing: 0.08em; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.author-in {
+  width: 100%; max-width: 360px; box-sizing: border-box; font-family: var(--f-body); font-size: 16px; color: var(--fg);
+  background: var(--surface); border: 0; border-bottom: 1px solid var(--rule); border-radius: 0; padding: 8px 2px;
+}
+.author-in::placeholder { color: color-mix(in srgb, var(--muted) 70%, transparent); font-size: 14px; }
+.author-in:focus-visible { outline: none; border-bottom: 2px solid var(--accent); }
+.chip { position: relative; }
+.chip input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.chip span {
+  display: inline-flex; align-items: center; gap: 7px; padding: 8px 14px; border-radius: 999px;
+  border: 1px solid var(--line); font-size: 14px; color: var(--fg); cursor: pointer; user-select: none; background: var(--surface);
+  transition: background 160ms, color 160ms, border-color 160ms;
+}
+.chip .sw { width: 9px; height: 9px; border-radius: 50%; background: var(--c); }
+.chip input:checked + span { border-color: var(--accent); background: var(--accent); color: var(--accent-fg); }
+.chip input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+.modes { display: inline-grid; grid-template-columns: 1fr 1fr; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 3px; gap: 3px; justify-self: start; }
+.modes label { position: relative; }
+.modes input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.modes span { display: block; text-align: center; padding: 8px 22px; border-radius: 999px; font-size: 15px; font-family: var(--f-body); font-weight: 700; cursor: pointer; color: var(--muted); }
+.modes input:checked + span { background: var(--fg); color: var(--bg); }
+.modes input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.make-row { max-width: 680px; margin: 30px auto 0; display: grid; justify-items: center; gap: 10px; }
+.make {
+  font-family: var(--f-display); font-weight: 800; font-size: 19px; letter-spacing: 0.06em;
+  padding: 16px 44px; border-radius: 999px; border: 0; cursor: pointer;
+  background: var(--accent); color: var(--accent-fg);
+  box-shadow: 0 12px 24px -12px color-mix(in srgb, var(--accent) 80%, transparent);
+  transition: transform 160ms;
+}
+.make:hover { transform: translateY(-1px); }
+.status { font-size: 14px; color: var(--muted); min-height: 1.4em; margin: 0; text-align: center; }
+
+.shelf-wrap { max-width: 900px; margin: 64px auto 0; }
+.shelf-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 14px; }
+.shelf-head h2 { font-family: var(--f-display); font-weight: 700; font-size: 20px; margin: 0; }
+.shelf-head span { font-size: 13px; color: var(--muted); }
+.shelf {
+  display: flex; align-items: flex-end; gap: 6px; overflow-x: auto; min-height: 196px;
+  padding: 0 14px; border-bottom: 12px solid var(--shelf); box-shadow: 0 6px 0 var(--shelf-edge);
+  scrollbar-width: thin;
+}
+.spine {
+  flex: none; border: 0; padding: 14px 0 12px; cursor: pointer; width: var(--w); height: var(--h);
+  border-radius: 3px 3px 1px 1px; color: var(--gold);
+  background:
+    linear-gradient(to right, rgba(0, 0, 0, 0.28), rgba(255, 255, 255, 0.08) 22%, transparent 40%, rgba(0, 0, 0, 0.18)),
+    var(--cloth);
+  display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+  transition: transform 220ms ease;
+  box-shadow: inset 0 6px 0 -3px rgba(255, 255, 255, 0.08);
+}
+.spine:hover, .spine:focus-visible { transform: translateY(-10px); }
+.spine .st { writing-mode: vertical-rl; font-family: var(--f-title); font-size: 15px; letter-spacing: 0.1em; max-height: 72%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.spine .sa { writing-mode: vertical-rl; font-family: var(--f-body); font-size: 11px; opacity: 0.8; }
+.spine .band { width: 100%; height: 2px; background: color-mix(in srgb, var(--gold) 60%, transparent); }
+
+/* scene 2: making */
+#v-making { min-height: 70vh; display: grid; place-content: center; justify-items: center; gap: 22px; text-align: center; }
+.binding { width: 240px; height: 160px; position: relative; perspective: 900px; margin-bottom: 14px; }
+.binding .base { position: absolute; inset: 0; display: flex; filter: drop-shadow(0 18px 20px rgba(20, 15, 30, 0.35)); }
+.binding .base i { flex: 1; background: var(--paper); }
+.binding .base i:first-child { border-radius: 4px 0 0 4px; background-image: linear-gradient(to left, rgba(60, 45, 25, 0.2), transparent 20%); }
+.binding .base i:last-child { border-radius: 0 4px 4px 0; background-image: linear-gradient(to right, rgba(60, 45, 25, 0.2), transparent 20%); }
+.binding .base::after { content: ""; position: absolute; inset: auto -8px -8px; height: 10px; background: var(--accent); border-radius: 0 0 6px 6px; z-index: -1; }
+.leaf {
+  position: absolute; top: 0; left: 50%; width: 50%; height: 100%; transform-origin: left center;
+  background: var(--paper); border-radius: 0 4px 4px 0;
+  background-image: repeating-linear-gradient(to bottom, transparent 0 14px, rgba(60, 45, 25, 0.12) 14px 15px);
+  background-size: 76% 70%; background-position: 50% 55%; background-repeat: no-repeat;
+  animation: flip 2.8s cubic-bezier(.45, .05, .35, 1) infinite;
+}
+.leaf:nth-child(3) { animation-delay: 0.9s; }
+.leaf:nth-child(4) { animation-delay: 1.8s; }
+@keyframes flip {
+  0% { transform: rotateY(0); }
+  45%, 100% { transform: rotateY(-180deg); }
+}
+#v-making h2 { font-family: var(--f-display); font-weight: 800; font-size: clamp(26px, 5vw, 36px); margin: 0; }
+.step { font-family: var(--f-body); font-size: 17px; color: var(--muted); margin: 0; min-height: 1.6em; }
+.ghost { font-size: 14px; padding: 9px 18px; border-radius: 999px; cursor: pointer; background: transparent; color: var(--fg); border: 1px solid var(--line); }
+
+/* scene 3: book */
+.bookbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 26px; }
+.stage { position: relative; min-width: 0; display: flex; justify-content: center; padding-block: 8px; }
+.book { display: flex; justify-content: center; filter: drop-shadow(0 22px 30px rgba(20, 15, 30, 0.3)); }
+.book.turn { animation: turn 380ms ease; }
+@keyframes turn { from { opacity: 0.3; transform: translateX(10px); } to { opacity: 1; transform: none; } }
+
+.page {
+  width: var(--pw); height: var(--ph); box-sizing: border-box; flex: none;
+  background: var(--paper); color: var(--ink); font-family: var(--f-body); font-size: var(--fs); line-height: 1.85;
+  padding: calc(var(--pw) * 0.1) calc(var(--pw) * 0.095) calc(var(--pw) * 0.075);
+  display: grid; grid-template-rows: auto 1fr auto; gap: calc(var(--fs) * 0.9); cursor: pointer; position: relative;
+}
+.page.left { border-radius: 4px 0 0 4px; background-image: linear-gradient(to left, rgba(60, 45, 25, 0.16), transparent 9%); }
+.page.right { border-radius: 0 4px 4px 0; background-image: linear-gradient(to right, rgba(60, 45, 25, 0.18), transparent 9%); }
+.page.solo { border-radius: 2px 4px 4px 2px; background-image: linear-gradient(to right, rgba(60, 45, 25, 0.14), transparent 6%); }
+.run { font-size: 0.7em; color: var(--ink-soft); letter-spacing: 0.08em; text-align: center; min-height: 1.4em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.folio { font-size: 0.72em; color: var(--ink-soft); text-align: center; font-variant-numeric: tabular-nums; }
+.body { overflow: hidden; min-height: 0; }
+.body p { margin: 0; text-indent: 1em; text-align: justify; word-break: keep-all; overflow-wrap: anywhere; }
+.body p.cont { text-indent: 0; }
+.chap { text-align: center; margin: 14% 0 12%; }
+.chap .no { font-size: 0.72em; letter-spacing: 0.3em; color: var(--ink-soft); }
+.chap .t { font-family: var(--f-title); font-size: 1.55em; line-height: 1.35; margin-top: 0.5em; text-wrap: balance; }
+.chap .rule, .poemhead .rule { width: 2.2em; height: 1px; background: var(--ink-soft); margin: 1.1em auto 0; opacity: 0.6; }
+.chap + p { text-indent: 0; }
+.chap + p::first-letter { font-family: var(--f-title); font-size: 2.6em; float: left; line-height: 1; margin: 0.06em 0.12em 0 0; }
+.poemhead { margin: 10% 0 9%; }
+.poemhead .t { font-family: var(--f-title); font-size: 1.4em; line-height: 1.35; word-break: keep-all; }
+.poemhead .rule { margin-left: 0; width: 1.6em; margin-top: 0.8em; }
+.stanza { margin-bottom: 1.15em; }
+.ln { padding-left: 1.2em; text-indent: -1.2em; word-break: keep-all; overflow-wrap: anywhere; line-height: 1.95; }
+.titlepage { display: grid; place-content: center; text-align: center; gap: 1.2em; }
+.titlepage .t { font-family: var(--f-title); font-size: 1.9em; line-height: 1.3; text-wrap: balance; }
+.titlepage .a { font-size: 0.9em; color: var(--ink-soft); letter-spacing: 0.15em; }
+.titlepage .orn { color: var(--ink-soft); letter-spacing: 0.5em; font-size: 0.8em; }
+.toc { display: grid; align-content: start; }
+.toc h3 { font-family: var(--f-title); font-weight: 400; font-size: 1.25em; text-align: center; margin: 14% 0 12%; letter-spacing: 0.4em; }
+.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.75em; }
+.toc li { display: flex; align-items: baseline; gap: 0.5em; min-width: 0; }
+.toc li .tt { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.toc li .dots { flex: 1; border-bottom: 1px dotted var(--ink-soft); transform: translateY(-0.3em); min-width: 1em; }
+.toc li .pn { font-variant-numeric: tabular-nums; color: var(--ink-soft); }
+.colophon { display: grid; align-content: end; gap: 1.1em; font-size: 0.8em; }
+.colophon .end { text-align: center; font-family: var(--f-title); font-size: 1.3em; color: var(--ink-soft); margin-bottom: auto; padding-top: 12%; }
+.colophon .src { border-left: 2px solid var(--ink-soft); padding-left: 0.9em; color: var(--ink); white-space: pre-wrap; word-break: keep-all; max-height: 9em; overflow: hidden; }
+.colophon .facts { color: var(--ink-soft); line-height: 1.6; }
+.colophon dl { display: grid; grid-template-columns: auto 1fr; gap: 0.3em 1em; margin: 0; border-top: 1px solid rgba(60, 45, 25, 0.3); padding-top: 0.9em; }
+.colophon dt { color: var(--ink-soft); }
+.colophon dd { margin: 0; }
+
+.cover {
+  width: var(--pw); height: var(--ph); box-sizing: border-box; flex: none; cursor: pointer; position: relative; overflow: hidden;
+  background:
+    linear-gradient(to right, rgba(0, 0, 0, 0.35), rgba(255, 255, 255, 0.06) 3%, transparent 6%),
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.025) 0 2px, transparent 2px 4px),
+    repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0.05) 0 2px, transparent 2px 4px),
+    var(--cloth);
+  border-radius: 3px 7px 7px 3px; color: var(--gold);
+  display: grid; grid-template-rows: auto 1fr auto auto;
+  padding: calc(var(--pw) * 0.1) calc(var(--pw) * 0.1) 0;
+}
+.cover::before { content: ""; position: absolute; inset: calc(var(--pw) * 0.045); border: 1px solid color-mix(in srgb, var(--gold) 55%, transparent); pointer-events: none; }
+.cover .genre { text-align: center; font-family: var(--f-ui); font-size: calc(var(--pw) * 0.03); letter-spacing: 0.4em; padding-top: calc(var(--pw) * 0.02); }
+.cover .mid { align-self: center; text-align: center; display: grid; gap: calc(var(--pw) * 0.05); }
+.cover .orn { font-size: calc(var(--pw) * 0.04); letter-spacing: 0.6em; opacity: 0.8; min-height: 1em; }
+.cover .title { font-family: var(--f-title); font-size: calc(var(--pw) * 0.115); line-height: 1.25; text-wrap: balance; word-break: keep-all; }
+.cover .author { text-align: center; font-family: var(--f-body); font-size: calc(var(--pw) * 0.042); letter-spacing: 0.25em; padding-bottom: calc(var(--pw) * 0.07); }
+.cover .obi {
+  margin: 0 calc(var(--pw) * -0.1); background: var(--obi); color: var(--ink); position: relative; z-index: 1;
+  padding: calc(var(--pw) * 0.055) calc(var(--pw) * 0.1) calc(var(--pw) * 0.05); display: grid; gap: calc(var(--pw) * 0.025);
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.25);
+}
+.cover .obi .tag { font-family: var(--f-body); font-weight: 700; font-size: calc(var(--pw) * 0.045); line-height: 1.45; word-break: keep-all; }
+.cover .obi .imprint { display: flex; justify-content: space-between; font-family: var(--f-ui); font-size: calc(var(--pw) * 0.027); color: var(--ink-soft); }
+.badge { position: absolute; top: 10px; right: 10px; z-index: 2; font-family: var(--f-ui); font-size: 11px; padding: 3px 8px; border-radius: 4px; background: rgba(0, 0, 0, 0.45); color: #fff; }
+
+.pager { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 20px; }
+.pager button { font-size: 14px; padding: 8px 16px; border-radius: 999px; cursor: pointer; background: var(--surface); color: var(--fg); border: 1px solid var(--line); }
+.pager button:disabled { opacity: 0.4; cursor: default; }
+.pager .where { min-width: 92px; text-align: center; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.hint { text-align: center; font-size: 12px; color: var(--muted); margin: 10px 0 0; }
+
+.toast {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(24px + env(safe-area-inset-bottom, 0px)); z-index: 30;
+  background: var(--fg); color: var(--bg); padding: 11px 20px; border-radius: 999px; font-size: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+#measure { position: absolute; left: 0; top: 0; visibility: hidden; pointer-events: none; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top-nav">
+    <a href="index.html" class="nav-link">← 처음으로</a>
+  </div>
+
+  <!-- scene 1 -->
+  <section class="view" id="v-write">
+    <header class="hero">
+      <div class="eyebrow">한문장 출판 · 1인 제본소</div>
+      <h1>나만의 책 만들기</h1>
+      <p>오타가 나도, 'ㅋㅋ'와 'ㅠㅠ'뿐이어도 괜찮아요. 오늘 적은 한 줄이 표지가 있는 한 권의 책이 됩니다.</p>
+    </header>
+
+    <form id="form" novalidate>
+      <div class="sheet">
+        <div class="sheet-head"><label class="t" for="src">원고</label><span class="n" id="count">0 / 2,000자</span></div>
+        <textarea id="src" maxlength="2000" placeholder="아무렇게나 적어 보세요. 예) ㅋㅋ 퇴근하는데 고양이가 계속 따라옴 뭐임">아 오늘 비오는데 우산 잃어버림 ㅡㅡ 개짜증,, 근데 모르는 사람이 우산 씌워줌ㅠㅠ 감동</textarea>
+      </div>
+
+      <div class="opts">
+        <div class="opt">
+          <label class="label" for="author">지은이</label>
+          <input class="author-in" id="author" maxlength="20" autocomplete="off" placeholder="표지에 들어갈 이름 · 비워 두면 필명을 지어 드려요">
+        </div>
+        <div class="opt">
+          <span class="label">책 종류</span>
+          <div class="modes" role="radiogroup" aria-label="책 종류">
+            <label><input type="radio" name="mode" id="mode-novel" value="novel" checked><span>소설책</span></label>
+            <label><input type="radio" name="mode" id="mode-poem" value="poem"><span>시집</span></label>
+          </div>
+        </div>
+        <div class="opt">
+          <span class="label" id="genreLabel">장르</span>
+          <div class="chips" id="genres"></div>
+        </div>
+        <div class="opt">
+          <span class="label">분량</span>
+          <div class="chips" id="lens"></div>
+        </div>
+      </div>
+
+      <div class="make-row">
+        <button class="make" id="make" type="submit">책 만들기</button>
+        <p class="status" id="status" aria-live="polite"></p>
+      </div>
+    </form>
+
+    <section class="shelf-wrap" aria-label="책장">
+      <div class="shelf-head"><h2>책장</h2><span id="shelfNote">책등을 누르면 펼쳐져요</span></div>
+      <div class="shelf" id="shelf"></div>
+    </section>
+  </section>
+
+  <!-- scene 2 -->
+  <section class="view" id="v-making" hidden>
+    <div class="binding" aria-hidden="true">
+      <div class="base"><i></i><i></i></div>
+      <div class="leaf"></div><div class="leaf"></div><div class="leaf"></div>
+    </div>
+    <h2 id="makingTitle">책을 만들고 있어요</h2>
+    <p class="step" id="step" aria-live="polite">원고를 읽는 중</p>
+    <button class="ghost" id="cancel" type="button">그만 만들기</button>
+  </section>
+
+  <!-- scene 3 -->
+  <section class="view" id="v-book" hidden>
+    <nav class="bookbar">
+      <button class="ghost" id="back" type="button">← 새 책 만들기</button>
+    </nav>
+    <div class="stage" id="stage">
+      <div class="book" id="book"></div>
+      <div class="page" id="measure" aria-hidden="true"><div class="run"></div><div class="body" id="mbody"></div><div class="folio">0</div></div>
+    </div>
+    <div class="pager">
+      <button type="button" id="prev">← 이전</button>
+      <span class="where" id="where">표지</span>
+      <button type="button" id="next">다음 →</button>
+    </div>
+    <p class="hint">페이지를 누르거나 좌우 방향키로 넘길 수 있어요.</p>
+  </section>
+</div>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+// 전달해주신 API Key가 자동 적용되었습니다.
+const GEMINI_API_KEY = "AQ.Ab8RN6ISnIIwBF4dpxSsv-SZCAcXaKZ7zFYM-Q-Rw_Kg0rmaTg";
+
+const MODES = {
+  novel: {
+    genreLabel: "장르", make: "책 만들기",
+    genres: [
+      { id: "literary", label: "순문학", cloth: "#3a3530" },
+      { id: "romance", label: "로맨스", cloth: "#6b1e2e" },
+      { id: "mystery", label: "미스터리", cloth: "#1b2943" },
+      { id: "fantasy", label: "판타지", cloth: "#1d4636" },
+      { id: "essay", label: "에세이", cloth: "#5a4a2a" },
+    ],
+    lens: [
+      { v: 700, label: "단편 · 약 700자" },
+      { v: 1400, label: "중편 · 약 1,400자", on: true },
+      { v: 2400, label: "장편 · 약 2,400자" },
+    ],
+  },
+  poem: {
+    genreLabel: "시의 결", make: "시집 만들기",
+    genres: [
+      { id: "lyric", label: "서정", cloth: "#2f3d52" },
+      { id: "love", label: "사랑", cloth: "#7a3a46" },
+      { id: "season", label: "계절", cloth: "#3f5a3a" },
+      { id: "night", label: "밤", cloth: "#1c1f2e" },
+      { id: "wit", label: "위트", cloth: "#7a5a1e" },
+    ],
+    lens: [
+      { v: 3, label: "시 3편" },
+      { v: 5, label: "시 5편", on: true },
+      { v: 7, label: "시 7편" },
+    ],
+  },
+};
+const ALL_GENRES = [...MODES.novel.genres, ...MODES.poem.genres];
+
+const SRC_EX = "아 오늘 비오는데 우산 잃어버림 ㅡㅡ 개짜증,, 근데 모르는 사람이 우산 씌워줌ㅠㅠ 감동";
+const EXAMPLES = {
+  "ex-novel": {
+    id: "ex-novel", example: true, mode: "novel", genre: "literary", source: SRC_EX, date: "2026-10-28",
+    facts: ["비 오는 날", "잃어버린 우산", "짜증", "모르는 사람", "씌워 준 우산", "감동"],
+    title: "빗소리의 반경", author: "한서윤",
+    tagline: "잃어버린 우산 대신, 나는 낯선 반경 하나를 얻었다",
+    chapterTitle: "남색 우산",
+    paragraphs: [
+      "우산이 사라졌다는 사실을 깨달은 것은 지하철역 계단을 다 올라온 뒤였다. 손잡이를 쥐고 있던 감각은 아직 손바닥에 남아 있는데, 정작 손은 비어 있었다. 출구 너머로 비가 회색 커튼처럼 드리워져 있었다.",
+      "나는 이를 악물고 젖은 앞머리를 쓸어 넘겼다. 오늘따라 왜 이런 일까지 생기는지. 집까지 걸어서 십이 분, 뛰면 칠 분. 어느 쪽이든 젖는 건 마찬가지였고, 이상하게도 뛸 기운이 남아 있지 않았다.",
+      "\"같은 방향이면, 같이 쓰실래요?\"",
+      "목소리는 오른쪽 어깨 높이에서 들려왔다. 남색 우산을 든, 처음 보는 사람이었다. 소매 끝은 이미 반쯤 젖어 있었다. 낯선 사람에게 우산을 나눠 준다는 건 자기 몫의 마른 자리를 절반쯤 내놓는다는 뜻이었다.",
+      "\"괜찮으세요? 좁을 텐데요.\"",
+      "\"비는 원래 좀 나눠 맞는 거예요.\"",
+      "그 말이 너무 아무렇지 않아서 나는 웃고 말았다. 우리는 우산 하나만큼의 반경 안에서 나란히 걸었다. 빗방울이 천 위로 쏟아질 때마다 둘 사이의 침묵이 조금씩 덜 어색해졌고, 그는 내 쪽으로 우산을 조금 더 기울였다.",
+      "헤어지는 길목에서 고맙다는 말을 하는데, 목 끝이 뜨거워졌다. 잃어버린 우산 하나 때문에 망친 줄 알았던 하루가, 그렇게 남의 우산 아래에서 조용히 마르고 있었다.",
+    ],
+  },
+  "ex-poem": {
+    id: "ex-poem", example: true, mode: "poem", genre: "lyric", source: SRC_EX, date: "2026-10-28",
+    facts: ["비 오는 날", "잃어버린 우산", "짜증", "모르는 사람", "씌워 준 우산", "감동"],
+    title: "나눠 맞는 비", author: "윤하결",
+    tagline: "우산을 잃은 날, 우산 하나를 얻었다",
+    poems: [
+      { title: "잃어버린 우산", stanzas: [
+        ["비 오는 날에만", "우산은 꼭 사라진다"],
+        ["빈손을 쥐었다 폈다", "어금니 사이에 낀 하루를", "혼자 씹어 삼킨다"],
+      ] },
+      { title: "모르는 사람", stanzas: [
+        ["같이 쓰실래요, 하고", "모르는 사람이", "내 어깨 위로 우산을 펼쳤다"],
+        ["이름도 모르는 사람과", "빗소리를 반씩 나눠 들었다"],
+      ] },
+      { title: "감동", stanzas: [
+        ["고맙다는 말끝에", "목 끝까지 물기가 차올랐다"],
+        ["젖은 건 어깨뿐인데", "마음이 먼저", "말라 가고 있었다"],
+      ] },
+    ],
+  },
+};
+
+const $ = (id) => document.getElementById(id);
+const stage = $("stage"), bookEl = $("book"), mbody = $("mbody");
+let book = null, leaves = [], view = 0, spread = false, ctl = null;
+let myBooks = [];
+
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const genreOf = (id) => ALL_GENRES.find((g) => g.id === id) || ALL_GENRES[0];
+const fmtDate = (d) => { const [y, m, dd] = String(d).split("-"); return `${y}년 ${Number(m)}월 ${Number(dd)}일`; };
+const currentMode = () => document.querySelector('input[name="mode"]:checked').value;
+const rid = () => Math.random().toString(36).substring(2, 10);
+
+let toastT;
+function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 3200); }
+const status = (t) => { $("status").textContent = t; };
+
+function show(name) {
+  for (const v of ["write", "making", "book"]) $("v-" + v).hidden = v !== name;
+  window.scrollTo({ top: 0 });
+}
+
+function renderOptions(mode) {
+  const m = MODES[mode];
+  $("genreLabel").textContent = m.genreLabel;
+  $("genres").innerHTML = m.genres.map((g, i) =>
+    `<label class="chip"><input type="radio" name="genre" id="g-${g.id}" value="${g.id}" ${i === 0 ? "checked" : ""}><span style="--c:${g.cloth}"><i class="sw"></i>${g.label}</span></label>`
+  ).join("");
+  $("lens").innerHTML = m.lens.map((l, i) =>
+    `<label class="chip"><input type="radio" name="len" id="len-${mode}-${i}" value="${l.v}" ${l.on ? "checked" : ""}><span>${l.label}</span></label>`
+  ).join("");
+  $("make").textContent = m.make;
+}
+document.querySelectorAll('input[name="mode"]').forEach((r) => r.addEventListener("change", () => renderOptions(currentMode())));
+renderOptions(currentMode());
+
+const countEl = $("count");
+const updateCount = () => { countEl.textContent = `${$("src").value.length.toLocaleString()} / 2,000자`; };
+$("src").addEventListener("input", updateCount); updateCount();
+try { $("author").value = localStorage.getItem("novel-author") || ""; } catch (e) {}
+$("author").addEventListener("change", () => { try { localStorage.setItem("novel-author", $("author").value.trim()); } catch (e) {} });
+
+function getSavedBooks() {
+  try { return JSON.parse(localStorage.getItem("my-books") || "[]"); } catch (e) { return []; }
+}
+function saveBookToStorage(newBook) {
+  const list = getSavedBooks();
+  list.unshift(newBook);
+  localStorage.setItem("my-books", JSON.stringify(list.slice(0, 30)));
+}
+
+function spineHTML(b, key) {
+  const g = genreOf(b.genre);
+  let h = 0; for (const c of String(b.id || b.title)) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  const height = 158 + (h % 34), width = 36 + (h % 12);
+  return `<button class="spine" type="button" data-open="${esc(key)}" style="--cloth:${g.cloth};--h:${height}px;--w:${width}px" aria-label="${esc(b.title)} 펼치기">
+    <span class="band"></span><span class="st">${esc(b.title)}</span><span class="sa">${esc(b.author)}</span><span class="band"></span></button>`;
+}
+function renderShelf() {
+  myBooks = getSavedBooks();
+  const parts = myBooks.map((b, i) => spineHTML(b, "saved-" + i));
+  parts.push(spineHTML(EXAMPLES["ex-novel"], "ex-novel"), spineHTML(EXAMPLES["ex-poem"], "ex-poem"));
+  $("shelf").innerHTML = parts.join("");
+  $("shelfNote").textContent = myBooks.length ? `${myBooks.length}권의 책이 꽂혀 있어요` : "예시 책 두 권이 꽂혀 있어요";
+}
+$("shelf").addEventListener("click", (e) => {
+  const s = e.target.closest("[data-open]"); if (!s) return;
+  const key = s.dataset.open;
+  if (key.startsWith("saved-")) {
+    const idx = parseInt(key.replace("saved-", ""), 10);
+    if (myBooks[idx]) openBook(myBooks[idx]);
+    return;
+  }
+  if (EXAMPLES[key]) openBook(EXAMPLES[key]);
+});
+renderShelf();
+
+function sizeStage() {
+  const w = stage.clientWidth;
+  spread = w >= 640;
+  const pw = Math.floor(spread ? Math.min(410, (w - 4) / 2) : Math.min(410, w));
+  const ph = Math.round(pw * 1.46);
+  const fs = Math.max(12.5, Math.min(16, pw / 25));
+  stage.style.setProperty("--pw", pw + "px");
+  stage.style.setProperty("--ph", ph + "px");
+  stage.style.setProperty("--fs", fs.toFixed(2) + "px");
+}
+function fits() { return mbody.scrollHeight <= mbody.clientHeight + 1; }
+
+function paginateNovel(b) {
+  const pages = [];
+  mbody.innerHTML = `<div class="chap"><div class="no">제1장</div><div class="t">${esc(b.chapterTitle)}</div><div class="rule"></div></div>`;
+  const flush = () => { pages.push({ html: mbody.innerHTML, run: pages.length === 0 ? "" : (pages.length % 2 === 1 ? b.title : b.chapterTitle) }); mbody.innerHTML = ""; };
+  for (const raw of b.paragraphs) {
+    let text = String(raw).trim(); if (!text) continue;
+    let cont = false;
+    while (text) {
+      const p = document.createElement("p"); if (cont) p.className = "cont";
+      p.textContent = text; mbody.appendChild(p);
+      if (fits()) break;
+      const words = text.split(" ");
+      let lo = 0, hi = words.length;
+      while (lo < hi) { const mid = Math.ceil((lo + hi) / 2); p.textContent = words.slice(0, mid).join(" "); if (fits()) lo = mid; else hi = mid - 1; }
+      if (lo === 0) {
+        if (mbody.childNodes.length > 1) { p.remove(); flush(); continue; }
+        lo = 1;
+      }
+      p.textContent = words.slice(0, lo).join(" ");
+      flush();
+      text = words.slice(lo).join(" "); cont = true;
+    }
+  }
+  if (mbody.innerHTML) flush();
+  return pages;
+}
+
+function paginatePoems(b) {
+  const pages = [], starts = [];
+  let run = "";
+  const flush = () => { pages.push({ html: mbody.innerHTML, run }); mbody.innerHTML = ""; };
+  b.poems.forEach((poem, pi) => {
+    if (mbody.innerHTML) flush();
+    starts[pi] = pages.length + 1;
+    run = "";
+    mbody.innerHTML = `<div class="poemhead"><div class="t">${esc(poem.title)}</div><div class="rule"></div></div>`;
+    for (const st of poem.stanzas) {
+      let box = document.createElement("div"); box.className = "stanza"; mbody.appendChild(box);
+      for (const line of st) {
+        const ln = document.createElement("div"); ln.className = "ln"; ln.textContent = String(line);
+        box.appendChild(ln);
+        if (!fits() && mbody.childNodes.length + box.childNodes.length > 2) {
+          ln.remove();
+          if (!box.childNodes.length) box.remove();
+          flush(); run = poem.title;
+          box = document.createElement("div"); box.className = "stanza"; mbody.appendChild(box);
+          box.appendChild(ln);
+        }
+      }
+    }
+  });
+  if (mbody.innerHTML) flush();
+  return { pages, starts };
+}
+
+const blank = () => ({ html: `<div class="run"></div><div class="body"></div><div class="folio"></div>` });
+
+function build() {
+  if (!book || !stage.clientWidth) return;
+  sizeStage();
+  const g = genreOf(book.genre);
+  const poem = book.mode === "poem";
+  leaves = [];
+  leaves.push({ html: `<div class="run"></div><div class="body titlepage"><div class="orn">· · ·</div><div class="t">${esc(book.title)}</div><div class="a">${esc(book.author)} ${poem ? "시집" : "장편소설"}</div></div><div class="folio"></div>` });
+  let pages;
+  if (poem) {
+    const r = paginatePoems(book);
+    pages = r.pages;
+    leaves.push({ html: `<div class="run"></div><div class="body toc"><h3>차례</h3><ol>${book.poems.map((p, i) => `<li><span class="tt">${esc(p.title)}</span><span class="dots"></span><span class="pn">${r.starts[i]}</span></li>`).join("")}</ol></div><div class="folio"></div>` });
+    if (spread) leaves.push(blank());
+  } else pages = paginateNovel(book);
+  pages.forEach((pg, i) => {
+    leaves.push({ html: `<div class="run">${esc(pg.run)}</div><div class="body">${pg.html}</div><div class="folio">${i + 1}</div>` });
+  });
+  const facts = Array.isArray(book.facts) && book.facts.length ? `<div class="facts">살린 장면 · ${book.facts.map(esc).join(" · ")}</div>` : "";
+  leaves.push({ html: `<div class="run"></div><div class="body colophon"><div class="end">끝</div><div class="src"><span style="color:var(--ink-soft)">원문</span>\n${esc(book.source)}</div>${facts}<dl><dt>지은이</dt><dd>${esc(book.author)}</dd><dt>${poem ? "갈래" : "장르"}</dt><dd>${poem ? "시집 · " : ""}${esc(g.label)}</dd><dt>초판 1쇄</dt><dd>${esc(fmtDate(book.date))}</dd><dt>펴낸곳</dt><dd>한문장 출판</dd></dl></div><div class="folio"></div>` });
+  if (spread && leaves.length % 2 === 1) leaves.splice(leaves.length - 1, 0, blank());
+  view = Math.min(view, viewCount() - 1);
+  render(false);
+}
+function viewCount() { return 1 + (spread ? Math.ceil(leaves.length / 2) : leaves.length); }
+
+function coverHTML() {
+  const g = genreOf(book.genre);
+  const poem = book.mode === "poem";
+  return `<div class="cover" style="--cloth:${g.cloth}" data-go="next">
+    ${book.example ? '<span class="badge">예시 책</span>' : ""}
+    <div class="genre">${poem ? "시집 · " : ""}${esc(g.label)}</div>
+    <div class="mid"><div class="orn">${poem ? "❧" : "✦"}</div><div class="title">${esc(book.title)}</div><div class="orn">${poem ? "" : "✦"}</div></div>
+    <div class="author">${esc(book.author)}${poem ? " 시집" : ""}</div>
+    <div class="obi"><div class="tag">${esc(book.tagline)}</div><div class="imprint"><span>한문장 출판${poem ? " 시인선" : ""}</span><span>${esc(fmtDate(book.date))}</span></div></div>
+  </div>`;
+}
+function render(anim) {
+  let html;
+  if (view === 0) html = coverHTML();
+  else if (spread) {
+    const i = (view - 1) * 2;
+    html = `<div class="page left" data-go="prev">${leaves[i].html}</div><div class="page right" data-go="next">${leaves[i + 1] ? leaves[i + 1].html : ""}</div>`;
+  } else html = `<div class="page solo" data-go="next">${leaves[view - 1].html}</div>`;
+  bookEl.innerHTML = html;
+  if (anim) { bookEl.classList.remove("turn"); void bookEl.offsetWidth; bookEl.classList.add("turn"); }
+  $("prev").disabled = view === 0;
+  $("next").disabled = view === viewCount() - 1;
+  $("where").textContent = view === 0 ? "표지" : `${view} / ${viewCount() - 1}`;
+}
+function go(d) { const v = Math.max(0, Math.min(viewCount() - 1, view + d)); if (v !== view) { view = v; render(true); } }
+$("prev").onclick = () => go(-1);
+$("next").onclick = () => go(1);
+bookEl.addEventListener("click", (e) => { const t = e.target.closest("[data-go]"); if (t) go(t.dataset.go === "prev" ? -1 : 1); });
+document.addEventListener("keydown", (e) => {
+  if ($("v-book").hidden || e.target.matches("textarea, input")) return;
+  if (e.key === "ArrowRight") go(1); else if (e.key === "ArrowLeft") go(-1);
+});
+let rt; new ResizeObserver(() => { clearTimeout(rt); rt = setTimeout(build, 120); }).observe(stage);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(build);
+
+function openBook(b) {
+  book = b; view = 0;
+  show("book");
+  build(); render(true);
+}
+$("back").onclick = () => show("write");
+
+/* ---------- Gemini AI Engine ---------- */
+const STEPS = {
+  novel: ["원고를 읽는 중", "장면을 고르는 중", "문장을 다듬는 중", "표지를 고르는 중", "실로 꿰매어 제본하는 중"],
+  poem: ["원고를 읽는 중", "시어를 고르는 중", "행을 나누는 중", "표지를 고르는 중", "실로 꿰매어 제본하는 중"],
+};
+let stepT;
+function startSteps(mode) {
+  let i = 0; $("step").textContent = STEPS[mode][0];
+  clearInterval(stepT);
+  stepT = setInterval(() => { i = Math.min(i + 1, STEPS[mode].length - 1); $("step").textContent = STEPS[mode][i]; }, 3500);
+}
+
+$("cancel").onclick = () => { if (ctl) ctl.abort(); };
+
+async function callGemini(promptText) {
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${GEMINI_API_KEY}`;
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: promptText }] }],
+      generationConfig: {
+        responseMimeType: "application/json"
+      }
+    }),
+    signal: ctl?.signal
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error?.message || "API 연결에 실패했습니다.");
+  }
+
+  const data = await response.json();
+  const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!rawText) throw new Error("응답 결과가 없습니다.");
+  return JSON.parse(rawText);
+}
+
+const MESSY = `[원문]은 아무렇게나 쓴 메모일 수 있다. 오타, 맞춤법 오류, 띄어쓰기 없음, 반말, 줄임말, 비속어, 인터넷 말투, 초성(ㅋㅋ ㅠㅠ ㅡㅡ), 이모티콘, 이모지, 문장 조각, 단어 몇 개만 있어도 된다. 그 안에 담긴 사건과 감정을 해석해서 재료로 삼아라.
+
+가장 중요한 규칙: 이 글은 반드시 '원문에 적힌 그 일'에 대한 글이어야 한다.
+1. facts 배열에 원문에서 추출한 구체적인 명사구를 짧게 담는다.
+2. facts의 요소들이 본문에 잘 녹아들어야 한다.
+3. 새로운 사건을 발명하지 말고, 원문의 순간을 풍성하게 묘사한다.
+4. 제목과 띠지도 원문의 사건에서 따온다.`;
+
+function getNovelPrompt(src, genre, len) {
+  return `너는 한국 출판사의 소설가다. 아래 [원문]을 바탕으로 "${genre.label}" 장르 소설의 첫 장을 작성하라.
+
+${MESSY}
+
+규칙:
+- 초성, 이모티콘, 인터넷 줄임말을 배제하고 출간된 한국 소설의 아름다운 문어체로 새로 써라.
+- 본문 분량은 공백 포함 약 ${len}자 내외.
+- 반드시 아래 JSON 스키마 형식으로만 응답하라.
+{"facts": ["요소1", "요소2"], "title": "책 제목", "author": "어울리는 작가 필명", "tagline": "띠지 문구", "chapterTitle": "1장 소제목", "paragraphs": ["문단1", "문단2", "문단3"]}
+
+[원문]
+${src}`;
+}
+
+function getPoemPrompt(src, genre, n) {
+  return `너는 한국 출판사의 시인이다. 아래 [원문]을 씨앗 삼아 "${genre.label}" 감성의 현대시 ${n}편으로 이루어진 시집을 써라.
+
+${MESSY}
+
+규칙:
+- 정제된 현대시 어조로 감정을 형상화하라.
+- 각 편은 2~4연, 연마다 2~5행으로 구성하라.
+- 반드시 아래 JSON 스키마 형식으로만 응답하라.
+{"facts": ["요소1", "요소2"], "title": "시집 제목", "author": "어울리는 시인 필명", "tagline": "띠지 문구", "poems": [{"title": "시 제목", "stanzas": [["1연 1행", "1연 2행"], ["2연 1행", "2연 2행"]]}]}
+
+[원문]
+${src}`;
+}
+
+$("form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (ctl) return;
+  const src = $("src").value.trim();
+  if (!src) { status("원고에 한 줄이라도 적어 주세요."); $("src").focus(); return; }
+
+  const mode = currentMode();
+  const genre = genreOf(document.querySelector('input[name="genre"]:checked').value);
+  const len = Number(document.querySelector('input[name="len"]:checked').value);
+  const authorIn = $("author").value.trim();
+
+  status("");
+  ctl = new AbortController();
+  $("makingTitle").textContent = mode === "poem" ? "시집을 엮고 있어요" : "책을 제본하고 있어요";
+  show("making");
+  startSteps(mode);
+
+  try {
+    const prompt = mode === "poem" ? getPoemPrompt(src, genre, len) : getNovelPrompt(src, genre, len);
+    const out = await callGemini(prompt);
+
+    const b = {
+      id: rid(), mode, genre: genre.id, source: src, date: new Date().toLocaleDateString("sv-SE"),
+      facts: Array.isArray(out?.facts) ? out.facts.slice(0, 10) : [],
+      title: String(out?.title || "무제"),
+      author: authorIn || String(out?.author || "익명"),
+      tagline: String(out?.tagline || "")
+    };
+
+    if (mode === "poem") {
+      b.poems = out.poems || [];
+    } else {
+      b.chapterTitle = String(out.chapterTitle || "첫 번째 장");
+      b.paragraphs = out.paragraphs || [];
+    }
+
+    saveBookToStorage(b);
+    renderShelf();
+    clearInterval(stepT);
+    ctl = null;
+    openBook(b);
+    toast(mode === "poem" ? "시집이 완성되었어요!" : "책이 완성되었어요!");
+  } catch (err) {
+    clearInterval(stepT);
+    ctl = null;
+    show("write");
+    if (err.name === "AbortError") {
+      status("책 만들기를 취소했습니다.");
+    } else {
+      status("제본 중 오류가 발생했습니다: " + err.message);
+      toast("다시 시도해 주세요.");
+    }
+  }
+});
+</script>
+</body>
+</html>
