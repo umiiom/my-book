@@ -6,7 +6,7 @@
 <title>한 문장 소설 · 북메이커</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&family=Song+Myung&display=swap">
+<link rel="stylesheet" crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&family=Song+Myung&display=swap">
 <style>
 :root {
   --bg: #eceef3;
@@ -688,7 +688,7 @@ async function cardBlob() {
   try {
     await (document.fonts ? document.fonts.ready : Promise.resolve());
     const bg = getComputedStyle(document.body).backgroundColor;
-    return await htmlToImage.toBlob(card, { pixelRatio: leaves.length > 8 ? 1.5 : 2, backgroundColor: bg, cacheBust: true });
+    return await htmlToImage.toBlob(card, { pixelRatio: Math.min(3, Math.max(2, Math.floor(14000 / card.offsetHeight))), backgroundColor: bg, cacheBust: true });
   } finally { card.parentNode.remove(); }
 }
 const fileName = () => `${(book.title || "나의 책").replace(/[\\/:*?"<>|]/g, "")}.png`;
