@@ -178,6 +178,11 @@ textarea:focus-visible { outline: none; }
 #v-making h2 { font-family: var(--f-display); font-weight: 800; font-size: clamp(26px, 5vw, 36px); margin: 0; }
 .step { font-family: var(--f-body); font-size: 17px; color: var(--muted); margin: 0; min-height: 1.6em; }
 .bar-r { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+#shareWrap { position: fixed; left: -10000px; top: 0; }
+#shareCard { padding: 36px 36px 22px; background: var(--bg); display: grid; justify-items: center; gap: 16px; }
+#shareCard .sc-book { display: flex; filter: drop-shadow(0 18px 24px rgba(20, 15, 30, 0.28)); }
+#shareCard .sc-foot { font-size: 13px; color: var(--muted); letter-spacing: 0.1em; }
+.share:disabled, .ghost:disabled { opacity: 0.6; cursor: default; }
 .share { font-size: 14px; padding: 9px 18px; border-radius: 999px; cursor: pointer; border: 0; background: var(--accent); color: var(--accent-fg); font-weight: 700; }
 .ghost { font-size: 14px; padding: 9px 18px; border-radius: 999px; cursor: pointer; background: transparent; color: var(--fg); border: 1px solid var(--line); }
 
@@ -272,6 +277,7 @@ textarea:focus-visible { outline: none; }
 
 #measure { position: absolute; left: 0; top: 0; visibility: hidden; pointer-events: none; }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js"></script>
 </head>
 <body>
 <div class="app">
@@ -343,8 +349,8 @@ textarea:focus-visible { outline: none; }
     <nav class="bookbar">
       <button class="ghost" id="back" type="button">← 새 책 만들기</button>
       <div class="bar-r">
-        <button class="ghost" id="keep" type="button" hidden>내 책장에 꽂기</button>
-        <button class="share" id="share" type="button">책 공유하기</button>
+        <button class="ghost" id="saveImg" type="button">이미지 저장</button>
+        <button class="share" id="copyImg" type="button">이미지 복사</button>
       </div>
     </nav>
     <div class="stage" id="stage">
@@ -645,58 +651,75 @@ document.addEventListener("keydown", (e) => {
 let rt; new ResizeObserver(() => { clearTimeout(rt); rt = setTimeout(build, 120); }).observe(stage);
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(build);
 
-function openBook(b, shared = false) {
+function openBook(b) {
   book = b; view = 0;
-  $("keep").hidden = !shared;
   show("book");
   build(); render(true);
 }
-$("back").onclick = () => { show("write"); if (location.hash) history.replaceState(null, "", location.pathname + location.search); };
+$("back").onclick = () => show("write");
 
-/* ---------- 공유 링크: 책 내용을 압축해 주소(#b=...)에 담음 ---------- */
-const b64u = (bytes) => { let s = ""; for (const x of bytes) s += String.fromCharCode(x); return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); };
-const unb64u = (str) => { const s = atob(str.replace(/-/g, "+").replace(/_/g, "/")); return Uint8Array.from(s, (c) => c.charCodeAt(0)); };
-async function packBook(b) {
-  const keep = { mode: b.mode, genre: b.genre, source: b.source, date: b.date, facts: b.facts, title: b.title, author: b.author, tagline: b.tagline, chapterTitle: b.chapterTitle, paragraphs: b.paragraphs, poems: b.poems };
-  const raw = new TextEncoder().encode(JSON.stringify(keep));
-  const zipped = new Uint8Array(await new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream("deflate-raw"))).arrayBuffer());
-  return b64u(zipped);
+/* ---------- 이미지로 공유: 표지 + 첫 페이지를 한 장의 이미지로 ---------- */
+function buildCard() {
+  const old = document.getElementById("shareWrap"); if (old) old.remove();
+  const wasView = view;
+  const firstIdx = Math.max(0, leaves.findIndex((l) => /class="(chap|poemhead)"/.test(l.html)));
+  view = 0;
+  const card = document.createElement("div");
+  card.id = "shareCard";
+  card.innerHTML = `<div class="sc-book">${coverHTML()}<div class="page right">${leaves[firstIdx].html}</div></div><div class="sc-foot">한문장 출판 · 나만의 책 만들기</div>`;
+  card.style.setProperty("--pw", stage.style.getPropertyValue("--pw"));
+  card.style.setProperty("--ph", stage.style.getPropertyValue("--ph"));
+  card.style.setProperty("--fs", stage.style.getPropertyValue("--fs"));
+  const wrap = document.createElement("div"); wrap.id = "shareWrap";
+  wrap.appendChild(card); document.body.appendChild(wrap);
+  view = wasView;
+  return card;
 }
-async function unpackBook(code) {
-  const text = await new Response(new Blob([unb64u(code)]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).text();
-  return JSON.parse(text);
-}
-$("share").onclick = async () => {
-  if (!book) return;
+async function cardBlob() {
+  if (!window.htmlToImage) throw new Error("이미지 도구를 불러오지 못했어요");
+  const card = buildCard();
   try {
-    const url = location.origin + location.pathname + "#b=" + (await packBook(book));
-    if (navigator.share && matchMedia("(pointer: coarse)").matches) {
-      await navigator.share({ title: book.title, text: `「${book.title}」 ${book.author} — 한 문장 소설로 만든 책`, url });
+    await (document.fonts ? document.fonts.ready : Promise.resolve());
+    const bg = getComputedStyle(document.body).backgroundColor;
+    return await htmlToImage.toBlob(card, { pixelRatio: 2, backgroundColor: bg, cacheBust: true });
+  } finally { card.parentNode.remove(); }
+}
+const fileName = () => `${(book.title || "나의 책").replace(/[\\/:*?"<>|]/g, "")}.png`;
+function busy(btn, on, label) { btn.disabled = on; btn.textContent = on ? "이미지 만드는 중…" : label; }
+
+$("copyImg").onclick = async () => {
+  if (!book) return;
+  const btn = $("copyImg"); busy(btn, true);
+  try {
+    const mobile = matchMedia("(pointer: coarse)").matches;
+    if (mobile && navigator.canShare) {
+      const file = new File([await cardBlob()], fileName(), { type: "image/png" });
+      if (navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: book.title }); return; }
+    }
+    if (navigator.clipboard && window.ClipboardItem) {
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": cardBlob() })]);
+      toast("이미지를 복사했어요. 카톡이나 메신저에 붙여 넣으세요!");
     } else {
-      await navigator.clipboard.writeText(url);
-      toast("공유 링크를 복사했어요. 카톡이나 메신저에 붙여 넣으세요!");
+      saveBlob(await cardBlob());
+      toast("이 브라우저는 복사가 안 돼서 이미지로 저장했어요.");
     }
   } catch (e) {
-    if (e.name !== "AbortError") toast("링크를 만들지 못했어요. 다시 눌러 주세요.");
-  }
+    if (e.name !== "AbortError") toast("이미지를 만들지 못했어요. 다시 눌러 주세요.");
+  } finally { busy(btn, false, "이미지 복사"); }
 };
-$("keep").onclick = () => {
+function saveBlob(blob) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = fileName();
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+$("saveImg").onclick = async () => {
   if (!book) return;
-  try { saveBookToStorage({ ...book, id: rid(), example: false }); renderShelf(); } catch (e) {}
-  $("keep").hidden = true;
-  toast("내 책장에 꽂았어요!");
+  const btn = $("saveImg"); busy(btn, true);
+  try { saveBlob(await cardBlob()); toast("이미지를 저장했어요!"); }
+  catch (e) { toast("이미지를 만들지 못했어요. 다시 눌러 주세요."); }
+  finally { busy(btn, false, "이미지 저장"); }
 };
-(async () => {
-  const m = location.hash.match(/^#b=([\w-]+)$/);
-  if (!m) return;
-  try {
-    const b = await unpackBook(m[1]);
-    b.id = "shared"; b.example = false;
-    openBook(b, true);
-  } catch (e) {
-    toast("공유받은 책을 열지 못했어요. 링크가 잘렸는지 확인해 주세요.");
-  }
-})();
 
 /* ---------- Gemini AI Engine ---------- */
 const STEPS = {
